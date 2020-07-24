@@ -4,7 +4,7 @@ import './App.css';
 import Navigation from './components/Navigation/Navigation';
 import Logo from './components/Logo/Logo';
 import ImageLinkForm from './components/ImageLinkForm/ImageLinkForm';
-// import Rank from './components/Rank/Rank';
+import Rank from './components/Rank/Rank';
 import SignIn from './components/SignIn/SignIn';
 import Register from './components/Register/Register';
 import FaceRecognition from './components/FaceRecognition/FaceRecognition';
@@ -34,7 +34,14 @@ class App extends React.Component {
       imageUrl: '',
       box: {},
       route: 'signin',
-      isSignedIn: false
+      isSignedIn: false,
+      user: {
+        id: '',
+        name: '',
+        email: '',
+        entries: 0,
+        joined: ''
+      }
     }
   }
 
@@ -63,9 +70,22 @@ class App extends React.Component {
   onButtonSubmit = () => {
     this.setState({imageUrl: this.state.input});
     app.models.predict(Clarifai.FACE_DETECT_MODEL, this.state.input)
-    .then((response) => this.displayFaceBox(this.calculateFaceLocation(response))
-    .catch(err => console.log(err))
-    );
+    .then((response) => {
+      if(response){
+        fetch('http://localhost:3000/image',{
+        method: 'PUT',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            id: this.state.user.id
+          })
+        })
+        .then((response) => response.json())
+        .then((count) => {
+          this.setState(Object.assign(this.state.user,{entries: count}));
+        })
+      }
+      this.displayFaceBox(this.calculateFaceLocation(response))
+    })
   }
 
   onRouteChange = (route) => {
@@ -76,6 +96,18 @@ class App extends React.Component {
     }
 
     this.setState({route: route});
+  }
+
+  loadUser = (data) => {
+    this.setState({
+      user: {
+        id: data.id,
+        name: data.name,
+        email: data.email,
+        entries: data.entries,
+        joined: data.joined
+      }
+    })
   }
 
   render() {
@@ -91,15 +123,15 @@ class App extends React.Component {
           this.state.route === 'home' ? 
           <>
             <Logo />
-            {/* <Rank /> */}
+            <Rank name={this.state.user.name} entries={this.state.user.entries} />
             <ImageLinkForm onInputChange={this.onInputChange} onButtonSubmit={this.onButtonSubmit} />
             <FaceRecognition box={this.state.box} imageUrl={this.state.imageUrl} />
           </>
             : 
             (this.state.route === 'signin') ?
-          <SignIn onRouteChange={this.onRouteChange} />
+          <SignIn loadUser={this.loadUser} onRouteChange={this.onRouteChange} />
               :
-          <Register onRouteChange={this.onRouteChange} />
+          <Register loadUser={this.loadUser} onRouteChange={this.onRouteChange} />
         }
       </div>
     );
