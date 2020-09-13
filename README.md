@@ -1,5 +1,7 @@
 # smartbrain-reactjs
 
-A Web App for detecting faces in images with sign in and register features, built using ReactJS (currently just the front end) and Clarifai Face Recognition API.
+A full-stack web application which detects faces in images using Clarifai Face Recognition API and displays a bounding box over the detected face, along with sign in and register features for users.
 
-Check it out live at: https://varun-sirpal10.github.io/smartbrain-reactjs/
+Tech Stack: ReactJS (Front-end), Node.js & Express.js (Server), PostgreSQL (Database).
+
+Check it out live at: https://smartbrain-front-end-reactjs.herokuapp.com/
